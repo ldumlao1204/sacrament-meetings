@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import { Geist, Geist_Mono, Lora } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
@@ -14,6 +14,11 @@ const geistMono = Geist_Mono({
   subsets: ['latin'],
 });
 
+const lora = Lora({
+  variable: '--font-lora',
+  subsets: ['latin'],
+});
+
 export const metadata: Metadata = {
   title: 'Sacrament Meeting Planner',
   description: 'Plan, review and print sacrament meeting programs.',
@@ -21,7 +26,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Header />
         <main className="flex-1 w-full max-w-4xl mx-auto px-4 py-8">{children}</main>

@@ -3,6 +3,7 @@
 @theme inline {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-lora);
 }
 
 /* Shared design tokens: Tailwind creates bg-primary, text-primary, bg-primary-light, text-accent ... */
@@ -15,5 +16,8 @@
 @layer base {
   body {
     @apply bg-white text-gray-900 font-sans;
+  }
+  h1, h2, h3 {
+    @apply font-serif;
   }
 }
