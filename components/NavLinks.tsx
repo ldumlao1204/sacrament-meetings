@@ -10,8 +10,7 @@ interface NavLink {
 
 const links: NavLink[] = [
     { href: '/', label: 'Home' },
-    { href: '/meetings', label: 'All Meetings' },
-    { href: '/meetings/current', label: 'This Sunday' },
+    { href: '/meetings', label: 'Meetings' },
 ];
 
 export default function NavLinks() {
