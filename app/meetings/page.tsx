@@ -1,6 +1,11 @@
+import type { Metadata } from 'next';
 import MeetingCard from '@/components/MeetingCard';
 import { getBaseUrl } from '@/lib/api';
 import type { SacramentMeeting } from '@/lib/types';
+
+export const metadata: Metadata = {
+    title: 'All Meetings',
+};
 
 export default async function MeetingsPage() {
     const baseUrl = await getBaseUrl();

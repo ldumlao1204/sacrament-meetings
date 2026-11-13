@@ -43,8 +43,8 @@ export default function MeetingDetail({ meeting }: MeetingDetailProps) {
                 <AgendaRow label="Announcements">
                     {meeting.announcements && meeting.announcements.length > 0 ? (
                         <ul className="list-disc pl-5">
-                            {meeting.announcements.map((announcement) => (
-                                <li key={announcement}>{announcement}</li>
+                            {meeting.announcements.map((announcement, index) => (
+                                <li key={`${announcement}-${index}`}>{announcement}</li>
                             ))}
                         </ul>
                     ) : (
@@ -58,8 +58,8 @@ export default function MeetingDetail({ meeting }: MeetingDetailProps) {
                 <AgendaRow label="Ward Business">
                     {meeting.wardBusiness.length > 0 ? (
                         <ul className="list-disc pl-5">
-                            {meeting.wardBusiness.map((item) => (
-                                <li key={item.description}>{item.description}</li>
+                            {meeting.wardBusiness.map((item, index) => (
+                                <li key={`${item.description}-${index}`}>{item.description}</li>
                             ))}
                         </ul>
                     ) : (

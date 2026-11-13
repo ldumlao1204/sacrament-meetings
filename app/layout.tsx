@@ -20,7 +20,10 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: 'Sacrament Meeting Planner',
+  title: {
+    default: 'Sacrament Meeting Planner',
+    template: '%s | Sacrament Meeting Planner'
+  },
   description: 'Plan, review and print sacrament meeting programs.',
 };
 
