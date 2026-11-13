@@ -1,5 +1,7 @@
 import type { MeetingType } from './types';
 
+export const WARD_TIME_ZONE = 'Asia/Manila';
+
 export const meetingTypeLabels: Record<MeetingType, string> = {
     testimony: 'Fast and Testimony Meeting',
     regular: 'Sacrament Meeting',
@@ -15,4 +17,8 @@ export function formatMeetingDate(date: string): string {
         day: 'numeric',
         timeZone: 'UTC',
     });
+}
+
+export function getTodayISO(): string {
+    return new Date().toLocaleDateString('en-CA', { timeZone: WARD_TIME_ZONE });
 }

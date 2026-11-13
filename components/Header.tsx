@@ -1,5 +1,6 @@
 import { cacheLife } from 'next/cache';
 import NavLinks from '@/components/NavLinks';
+import { WARD_TIME_ZONE, getTodayISO } from '@/lib/format';
 
 const WARD_NAME = 'Burnham 2nd Ward';
 
@@ -7,13 +8,12 @@ export default async function Header() {
     'use cache';
     cacheLife('hours');
 
-    const now = new Date();
-    const today = now.toLocaleDateString('en-US', {
+    const today = new Date().toLocaleDateString('en-US', {
         weekday: 'long',
         year: 'numeric',
         month: 'long',
         day: 'numeric',
-        timeZone: 'Asia/Manila',
+        timeZone: WARD_TIME_ZONE,
     });
 
     return (
@@ -23,7 +23,7 @@ export default async function Header() {
                     <p className="text-xl font-bold">{WARD_NAME}</p>
                     <p className="text-sm text-gray-200">Sacrament Meeting Planner</p>
                 </div>
-                <time dateTime={now.toISOString().slice(0, 10)} className="text-sm">
+                <time dateTime={getTodayISO()} className="text-sm">
                     {today}
                 </time>
                 <NavLinks />
