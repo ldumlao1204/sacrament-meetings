@@ -96,6 +96,60 @@ const meetings: SacramentMeeting[] = [
         closingHymn: { number: 166, title: 'Abide with Me!' },
         closingPrayer: 'Sister Salazar',
         announcements: ['Ward Christmas party: December 12', 'Youth activity on Wednesday at 6:00 PM']
+    },
+    {
+        id: 6,
+        date: '2026-11-22',
+        meetingType: 'regular',
+        presiding: 'Bishop Reyes',
+        conducting: 'Brother Aquino',
+        openingHymn: { number: 2, title: 'The Spirit of God' },
+        openingPrayer: 'Sister Ramos',
+        wardBusiness: [],
+        stakeBusiness: false,
+        sacramentHymn: { number: 172, title: 'In Humility, Our Savior' },
+        speakers: [
+            { name: 'Sister Pascual', topic: 'Following the Prophet', type: 'speaker' },
+            { name: 'Brother Lim', topic: 'Serving Others', type: 'speaker' }
+        ],
+        closingHymn: { number: 85, title: 'How Firm a Foundation' },
+        closingPrayer: 'Brother Garcia'
+    },
+    {
+        id: 7,
+        date: '2026-11-29',
+        meetingType: 'regular',
+        presiding: 'Bishop Reyes',
+        conducting: 'Brother Santos',
+        openingHymn: { number: 27, title: 'Praise to the Man' },
+        openingPrayer: 'Brother Villanueva',
+        wardBusiness: [{ description: 'Sustaining of Sister Ramos as ward music coordinator' }],
+        stakeBusiness: false,
+        sacramentHymn: { number: 181, title: 'Jesus of Nazareth, Savior and King' },
+        speakers: [
+            { name: 'Sister Garcia', topic: 'Christ-Centered Christmas', type: 'speaker' },
+            { name: 'Ward Choir', topic: 'I Believe in Christ', type: 'musical-number' },
+            { name: 'Brother Pascual', topic: 'The Blessings of Tithing', type: 'speaker' }
+        ],
+        closingHymn: { number: 134, title: 'I Believe in Christ' },
+        closingPrayer: 'Sister Lim',
+        announcements: ['Tithing declaration appointments are open']
+    },
+    {
+        id: 8,
+        date: '2026-12-06',
+        meetingType: 'testimony',
+        presiding: 'Bishop Reyes',
+        conducting: 'Brother Aquino',
+        openingHymn: { number: 201, title: 'Joy to the World' },
+        openingPrayer: 'Sister Flores',
+        wardBusiness: [],
+        stakeBusiness: false,
+        sacramentHymn: { number: 194, title: 'There Is a Green Hill Far Away' },
+        speakers: [],
+        closingHymn: { number: 208, title: 'O Little Town of Bethlehem' },
+        closingPrayer: 'Brother Rivera',
+        announcements: ['Fast offerings can be given to the bishopric', 'Ward Christmas party: December 12']
     }
 ];
 
