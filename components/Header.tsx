@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { cacheLife } from 'next/cache';
 import NavLinks from '@/components/NavLinks';
 import { WARD_TIME_ZONE, getTodayISO } from '@/lib/format';
@@ -26,7 +27,9 @@ export default async function Header() {
                 <time dateTime={getTodayISO()} className="text-sm">
                     {today}
                 </time>
-                <NavLinks />
+                <Suspense fallback={<div className="h-6" aria-hidden="true" />}>
+                    <NavLinks />
+                </Suspense>
             </div>
         </header>
     );
