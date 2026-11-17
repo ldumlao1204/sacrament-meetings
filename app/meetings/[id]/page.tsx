@@ -6,13 +6,14 @@ import { formatMeetingDate } from '@/lib/format';
 import { getMeetingById, getMeetings } from '@/lib/meetings-db';
 import type { SacramentMeeting } from '@/lib/types';
 
-export function generateStaticParams() {
-    return getMeetings().map((meeting) => ({ id: String(meeting.id) }));
+export async function generateStaticParams() {
+    const meetings = await getMeetings();
+    return meetings.map((meeting) => ({ id: String(meeting.id) }));
 }
 
 export async function generateMetadata({ params }: PageProps<'/meetings/[id]'>): Promise<Metadata> {
     const { id } = await params;
-    const meeting = /^\d+$/.test(id) ? getMeetingById(Number(id)) : null;
+    const meeting = /^\d+$/.test(id) ? await getMeetingById(Number(id)) : null;
 
     return {
         title: meeting ? formatMeetingDate(meeting.date) : 'Meeting Not Found',
