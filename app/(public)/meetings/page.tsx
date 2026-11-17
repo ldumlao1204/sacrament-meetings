@@ -1,7 +1,9 @@
 import type { Metadata } from 'next';
+import { redirect } from 'next/navigation';
 import MeetingCard from '@/components/MeetingCard';
 import MeetingSearch from '@/components/MeetingSearch';
-import { getFilteredMeetings } from '@/lib/meetings-db';
+import Pagination from '@/components/Pagination';
+import { getFilteredMeetings, getMeetingsTotalPages } from '@/lib/meetings-db';
 
 export const metadata: Metadata = {
     title: 'All Meetings',
@@ -15,7 +17,18 @@ export default async function MeetingsPage(props: PageProps<'/meetings'>) {
     const pageNumber = Number(searchParams.page);
     const currentPage = Number.isInteger(pageNumber) && pageNumber >= 1 ? pageNumber : 1;
 
-    const meetings = await getFilteredMeetings(query, currentPage);
+    // Run both queries at the same time.
+    const [meetings, totalPages] = await Promise.all([
+        getFilteredMeetings(query, currentPage),
+        getMeetingsTotalPages(query),
+    ]);
+
+    // A page past the end (e.g. ?page=99) goes to the last page instead.
+    if (currentPage > totalPages && totalPages > 0) {
+        const params = new URLSearchParams({ page: String(totalPages) });
+        if (query) params.set('query', query);
+        redirect(`/meetings?${params.toString()}`);
+    }
 
     return (
         <section className="space-y-6">
@@ -34,7 +47,7 @@ export default async function MeetingsPage(props: PageProps<'/meetings'>) {
                     ))}
                 </ul>
             )}
+            <Pagination currentPage={currentPage} totalPages={totalPages} />
         </section>
     );
 }
-
