@@ -15,7 +15,7 @@ export default async function MeetingsPage(props: PageProps<'/meetings'>) {
     // The URL can contain anything, so validate it before querying.
     const query = typeof searchParams.query === 'string' ? searchParams.query.trim().slice(0, 100) : '';
     const pageNumber = Number(searchParams.page);
-    const currentPage = Number.isInteger(pageNumber) && pageNumber >= 1 ? pageNumber : 1;
+    const currentPage = Number.isSafeInteger(pageNumber) && pageNumber >= 1 ? pageNumber : 1;
 
     // Run both queries at the same time.
     const [meetings, totalPages] = await Promise.all([

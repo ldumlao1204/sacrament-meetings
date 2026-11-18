@@ -28,7 +28,10 @@ const meetingColumns = sql`
 // WHERE clause shared by the search list and the page count, so both always match.
 // Speakers: only the names are searched, not the JSON keys or topics.
 function searchFilter(query: string) {
-    const searchTerm = `%${query}%`;
+    // Escape LIKE wildcards so "%" and "_" are searched as plain characters.
+    const escaped = query.replace(/[\\%_]/g, (character) => '\\' + character);
+    const searchTerm = `%${escaped}%`;
+
     return sql`
         WHERE presiding ILIKE ${searchTerm}
             OR conducting ILIKE ${searchTerm}
@@ -80,7 +83,15 @@ export async function getMeetingsTotalPages(query: string = ''): Promise<number>
     return Math.ceil(Number(rows[0].count) / ITEMS_PER_PAGE);
 }
 
+// Largest value a Postgres INTEGER (SERIAL) column can hold.
+const MAX_ID = 2147483647;
+
 export async function getMeetingById(id: number): Promise<SacramentMeeting | null> {
+    // An id outside the INTEGER range can't exist, and Postgres would throw an error.
+    if (!Number.isInteger(id) || id < 1 || id > MAX_ID) {
+        return null;
+    }
+
     const rows = await sql`
         SELECT ${meetingColumns} FROM meetings
         WHERE id = ${id}
