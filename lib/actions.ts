@@ -6,6 +6,35 @@ import { redirect } from 'next/navigation';
 import * as db from '@/lib/meetings-db';
 import type { MeetingInput, SacramentMeeting, SpeakerItem } from '@/lib/types';
 
+// ---------- Types shared with the form ----------
+
+// The raw text of every field (what the user typed)
+export type MeetingFormValues = {
+    date: string;
+    meetingType: string;
+    presiding: string;
+    conducting: string;
+    openingHymnNumber: string;
+    openingHymnTitle: string;
+    openingPrayer: string;
+    sacramentHymnNumber: string;
+    sacramentHymnTitle: string;
+    closingHymnNumber: string;
+    closingHymnTitle: string;
+    closingPrayer: string;
+    stakeBusiness: boolean;
+    announcements: string;
+    wardBusiness: string;
+    speakers: string;
+};
+
+// What createMeeting and updateMeeting send back to the form
+export type MeetingFormState = {
+    errors?: Partial<Record<keyof MeetingFormValues, string[]>>;
+    message?: string | null;
+    values?: MeetingFormValues; // sent back so the form can show what the user typed
+};
+
 // ---------- Helpers: turn textarea text into lists ----------
 
 // " a \n\n b " → ["a", "b"] (blank lines are skipped)
@@ -75,25 +104,27 @@ const MeetingFormSchema = z.object({
 
 type MeetingFormData = z.infer<typeof MeetingFormSchema>;
 
-// Collect the raw form values (create and edit use the same field names)
-function readMeetingForm(formData: FormData) {
+// Collect the raw form values as text (create and edit use the same field names)
+function readMeetingForm(formData: FormData): MeetingFormValues {
+    const text = (name: string) => String(formData.get(name) ?? '');
+
     return {
-        date: formData.get('date'),
-        meetingType: formData.get('meetingType'),
-        presiding: formData.get('presiding'),
-        conducting: formData.get('conducting'),
-        openingHymnNumber: formData.get('openingHymnNumber'),
-        openingHymnTitle: formData.get('openingHymnTitle'),
-        openingPrayer: formData.get('openingPrayer'),
-        sacramentHymnNumber: formData.get('sacramentHymnNumber'),
-        sacramentHymnTitle: formData.get('sacramentHymnTitle'),
-        closingHymnNumber: formData.get('closingHymnNumber'),
-        closingHymnTitle: formData.get('closingHymnTitle'),
-        closingPrayer: formData.get('closingPrayer'),
+        date: text('date'),
+        meetingType: text('meetingType'),
+        presiding: text('presiding'),
+        conducting: text('conducting'),
+        openingHymnNumber: text('openingHymnNumber'),
+        openingHymnTitle: text('openingHymnTitle'),
+        openingPrayer: text('openingPrayer'),
+        sacramentHymnNumber: text('sacramentHymnNumber'),
+        sacramentHymnTitle: text('sacramentHymnTitle'),
+        closingHymnNumber: text('closingHymnNumber'),
+        closingHymnTitle: text('closingHymnTitle'),
+        closingPrayer: text('closingPrayer'),
         stakeBusiness: formData.get('stakeBusiness') === 'on',
-        announcements: formData.get('announcements'),
-        wardBusiness: formData.get('wardBusiness'),
-        speakers: formData.get('speakers'),
+        announcements: text('announcements'),
+        wardBusiness: text('wardBusiness'),
+        speakers: text('speakers'),
     };
 }
 
@@ -118,14 +149,24 @@ function toMeetingInput(data: MeetingFormData): MeetingInput {
 
 // ---------- Server Actions ----------
 
-export async function createMeeting(formData: FormData) {
+export async function createMeeting(
+    prevState: MeetingFormState,
+    formData: FormData
+): Promise<MeetingFormState> {
     // 1. Check the raw form values against the schema
-    const parsed = MeetingFormSchema.safeParse(readMeetingForm(formData));
+    const values = readMeetingForm(formData);
+    const parsed = MeetingFormSchema.safeParse(values);
+
+    // 2. Invalid? RETURN the errors (and what the user typed) to the form, no throw
     if (!parsed.success) {
-        throw new Error('Invalid meeting input.');
+        return {
+            errors: z.flattenError(parsed.error).fieldErrors,
+            message: 'Please fix the fields marked below. The meeting was not created.',
+            values,
+        };
     }
 
-    // 2. Save the new meeting (only the database call goes inside try)
+    // 3. Save the new meeting (only the database call goes inside try)
     try {
         await db.addMeeting(toMeetingInput(parsed.data));
     } catch (error) {
@@ -133,19 +174,30 @@ export async function createMeeting(formData: FormData) {
         throw new Error('Failed to create the meeting. Please try again later.');
     }
 
-    // 3. Outside try: refresh every page under /meetings, then go back to the list
+    // 4. Outside try: refresh every page under /meetings, then go back to the list
     revalidatePath('/meetings', 'layout');
     redirect('/meetings');
 }
 
-export async function updateMeeting(id: number, formData: FormData) {
+export async function updateMeeting(
+    id: number,
+    prevState: MeetingFormState,
+    formData: FormData
+): Promise<MeetingFormState> {
     // 1. Check the raw form values against the schema
-    const parsed = MeetingFormSchema.safeParse(readMeetingForm(formData));
+    const values = readMeetingForm(formData);
+    const parsed = MeetingFormSchema.safeParse(values);
+
+    // 2. Invalid? RETURN the errors (and what the user typed) to the form, no throw
     if (!parsed.success) {
-        throw new Error('Invalid meeting input.');
+        return {
+            errors: z.flattenError(parsed.error).fieldErrors,
+            message: 'Please fix the fields marked below. Your changes were not saved.',
+            values,
+        };
     }
 
-    // 2. Change ONLY this meeting (only the database call goes inside try)
+    // 3. Change ONLY this meeting (only the database call goes inside try)
     let updated: SacramentMeeting | null;
     try {
         updated = await db.updateMeeting(id, toMeetingInput(parsed.data));
@@ -154,12 +206,12 @@ export async function updateMeeting(id: number, formData: FormData) {
         throw new Error('Failed to update the meeting. Please try again later.');
     }
 
-    // 3. No row changed: the meeting doesn't exist (maybe deleted in another tab)
+    // 4. No row changed: the meeting doesn't exist (maybe deleted in another tab)
     if (!updated) {
         throw new Error('Meeting not found.');
     }
 
-    // 4. Outside try: refresh every page under /meetings, then go back to the list
+    // 5. Outside try: refresh every page under /meetings, then go back to the list
     revalidatePath('/meetings', 'layout');
     redirect('/meetings');
 }
