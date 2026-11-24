@@ -1,14 +1,16 @@
 import type { Metadata } from 'next';
+import MeetingForm from '@/components/MeetingForm';
+import { createMeeting } from '@/lib/actions';
 
 export const metadata: Metadata = {
-    title: 'Create Meeting',
+    title: 'Plan a Meeting',
 };
 
 export default function NewMeetingPage() {
     return (
-        <section className="space-y-4">
-            <h1 className="text-3xl font-bold text-primary">Create Meeting — Coming in Week 04</h1>
-            <p className="text-gray-700">The form to plan a new sacrament meeting will be added here.</p>
+        <section className="space-y-6">
+            <h1 className="text-3xl font-bold text-primary">Plan a Meeting</h1>
+            <MeetingForm action={createMeeting} submitLabel="Create Meeting" />
         </section>
     );
 }

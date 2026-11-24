@@ -36,3 +36,6 @@ export interface SacramentMeeting {
     closingHymn: Hymn;
     closingPrayer: string;
 }
+
+// What the form sends: a meeting without its id (the database creates the id).
+export type MeetingInput = Omit<SacramentMeeting, 'id'>;

@@ -1,5 +1,9 @@
 import type { Metadata } from 'next';
-import { getMeetings } from '@/lib/meetings-db';
+import { notFound } from 'next/navigation';
+import MeetingForm from '@/components/MeetingForm';
+import { updateMeeting } from '@/lib/actions';
+import { formatMeetingDate } from '@/lib/format';
+import { getMeetingById, getMeetings } from '@/lib/meetings-db';
 
 export const metadata: Metadata = {
     title: 'Edit Meeting',
@@ -11,11 +15,25 @@ export async function generateStaticParams() {
     return meetings.map((meeting) => ({ id: String(meeting.id) }));
 }
 
-export default function EditMeetingPage() {
+export default async function EditMeetingPage({ params }: PageProps<'/meetings/[id]/edit'>) {
+    const { id } = await params;
+
+    // "abc" or "5x" is not an id, so don't even ask the database
+    const meeting = /^\d+$/.test(id) ? await getMeetingById(Number(id)) : null;
+
+    if (!meeting) {
+        notFound();
+    }
+
+    // Pre-fill the first argument (id); the form will supply formData
+    const updateMeetingWithId = updateMeeting.bind(null, meeting.id);
+
     return (
-        <section className="space-y-4">
-            <h1 className="text-3xl font-bold text-primary">Edit Meeting — Coming in Week 04</h1>
-            <p className="text-gray-700">The form to edit this meeting will be added here.</p>
+        <section className="space-y-6">
+            <h1 className="text-3xl font-bold text-primary">
+                Edit Meeting: {formatMeetingDate(meeting.date)}
+            </h1>
+            <MeetingForm action={updateMeetingWithId} meeting={meeting} submitLabel="Save Changes" />
         </section>
     );
 }

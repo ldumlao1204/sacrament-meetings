@@ -1,5 +1,5 @@
 import { neon } from '@neondatabase/serverless';
-import type { SacramentMeeting } from './types';
+import type { MeetingInput, SacramentMeeting } from './types';
 
 // Connect to Neon Postgres. The URL comes from .env.local (local) or Vercel settings (deployed).
 const sql = neon(process.env.DATABASE_URL!);
@@ -86,9 +86,13 @@ export async function getMeetingsTotalPages(query: string = ''): Promise<number>
 // Largest value a Postgres INTEGER (SERIAL) column can hold.
 const MAX_ID = 2147483647;
 
+// An id outside the INTEGER range can't exist, and Postgres would throw an error.
+function isValidId(id: number): boolean {
+    return Number.isInteger(id) && id >= 1 && id <= MAX_ID;
+}
+
 export async function getMeetingById(id: number): Promise<SacramentMeeting | null> {
-    // An id outside the INTEGER range can't exist, and Postgres would throw an error.
-    if (!Number.isInteger(id) || id < 1 || id > MAX_ID) {
+    if (!isValidId(id)) {
         return null;
     }
 
@@ -99,22 +103,70 @@ export async function getMeetingById(id: number): Promise<SacramentMeeting | nul
     return (rows[0] as unknown as SacramentMeeting) ?? null;
 }
 
-// Mutation stubs: will be wired to the database in Week 04.
-/* eslint-disable @typescript-eslint/no-unused-vars */
-export async function addMeeting(
-    data: Omit<SacramentMeeting, 'id'>
-): Promise<SacramentMeeting> {
-    throw new Error('addMeeting: database implementation coming in Week 04');
+// ---------- Mutations (Week 04) ----------
+// JSONB columns get JSON.stringify: the driver can't send an array of objects as JSON by itself.
+
+// Insert a new meeting and return it, including the id the database created.
+export async function addMeeting(data: MeetingInput): Promise<SacramentMeeting> {
+    const rows = await sql`
+        INSERT INTO meetings (
+            date, meeting_type, presiding, conducting, announcements,
+            opening_hymn, opening_prayer, ward_business, stake_business,
+            sacrament_hymn, speakers, closing_hymn, closing_prayer
+        )
+        VALUES (
+            ${data.date}, ${data.meetingType}, ${data.presiding}, ${data.conducting},
+            ${data.announcements ?? []},
+            ${JSON.stringify(data.openingHymn)}, ${data.openingPrayer},
+            ${JSON.stringify(data.wardBusiness)}, ${data.stakeBusiness},
+            ${JSON.stringify(data.sacramentHymn)}, ${JSON.stringify(data.speakers)},
+            ${JSON.stringify(data.closingHymn)}, ${data.closingPrayer}
+        )
+        RETURNING ${meetingColumns}
+    `;
+    return rows[0] as unknown as SacramentMeeting;
 }
 
+// Replace every field of one meeting. Returns null if no meeting has that id.
 export async function updateMeeting(
     id: number,
-    updates: Partial<SacramentMeeting>
+    data: MeetingInput
 ): Promise<SacramentMeeting | null> {
-    throw new Error('updateMeeting: database implementation coming in Week 04');
+    if (!isValidId(id)) {
+        return null;
+    }
+
+    const rows = await sql`
+        UPDATE meetings
+        SET date           = ${data.date},
+            meeting_type   = ${data.meetingType},
+            presiding      = ${data.presiding},
+            conducting     = ${data.conducting},
+            announcements  = ${data.announcements ?? []},
+            opening_hymn   = ${JSON.stringify(data.openingHymn)},
+            opening_prayer = ${data.openingPrayer},
+            ward_business  = ${JSON.stringify(data.wardBusiness)},
+            stake_business = ${data.stakeBusiness},
+            sacrament_hymn = ${JSON.stringify(data.sacramentHymn)},
+            speakers       = ${JSON.stringify(data.speakers)},
+            closing_hymn   = ${JSON.stringify(data.closingHymn)},
+            closing_prayer = ${data.closingPrayer}
+        WHERE id = ${id}
+        RETURNING ${meetingColumns}
+    `;
+    return (rows[0] as unknown as SacramentMeeting) ?? null;
 }
 
+// Delete one meeting. Returns true if a row was deleted, false if the id didn't exist.
 export async function deleteMeeting(id: number): Promise<boolean> {
-    throw new Error('deleteMeeting: database implementation coming in Week 04');
+    if (!isValidId(id)) {
+        return false;
+    }
+
+    const rows = await sql`
+        DELETE FROM meetings
+        WHERE id = ${id}
+        RETURNING id
+    `;
+    return rows.length > 0;
 }
-/* eslint-enable @typescript-eslint/no-unused-vars */

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import MeetingCard from '@/components/MeetingCard';
 import MeetingSearch from '@/components/MeetingSearch';
@@ -32,7 +33,16 @@ export default async function MeetingsPage(props: PageProps<'/meetings'>) {
 
     return (
         <section className="space-y-6">
-            <h1 className="text-3xl font-bold text-primary">All Meetings</h1>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-3xl font-bold text-primary">All Meetings</h1>
+                <Link
+                    href="/meetings/new"
+                    className="px-4 py-2 rounded-md bg-primary text-white font-semibold hover:bg-primary/90"
+                >
+                    Plan a Meeting
+                </Link>
+            </div>
+
             <MeetingSearch />
             {meetings.length === 0 ? (
                 <p className="text-gray-700">
