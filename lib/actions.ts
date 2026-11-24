@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import * as db from '@/lib/meetings-db';
-import type { MeetingInput, SpeakerItem } from '@/lib/types';
+import type { MeetingInput, SacramentMeeting, SpeakerItem } from '@/lib/types';
 
 // ---------- Helpers: turn textarea text into lists ----------
 
@@ -125,10 +125,15 @@ export async function createMeeting(formData: FormData) {
         throw new Error('Invalid meeting input.');
     }
 
-    // 2. Save the new meeting
-    await db.addMeeting(toMeetingInput(parsed.data));
+    // 2. Save the new meeting (only the database call goes inside try)
+    try {
+        await db.addMeeting(toMeetingInput(parsed.data));
+    } catch (error) {
+        console.error('Database error in createMeeting:', error);
+        throw new Error('Failed to create the meeting. Please try again later.');
+    }
 
-    // 3. Refresh every page under /meetings, then go back to the list
+    // 3. Outside try: refresh every page under /meetings, then go back to the list
     revalidatePath('/meetings', 'layout');
     redirect('/meetings');
 }
@@ -140,21 +145,34 @@ export async function updateMeeting(id: number, formData: FormData) {
         throw new Error('Invalid meeting input.');
     }
 
-    // 2. Change ONLY this meeting (db.updateMeeting also checks the id)
-    const updated = await db.updateMeeting(id, toMeetingInput(parsed.data));
+    // 2. Change ONLY this meeting (only the database call goes inside try)
+    let updated: SacramentMeeting | null;
+    try {
+        updated = await db.updateMeeting(id, toMeetingInput(parsed.data));
+    } catch (error) {
+        console.error('Database error in updateMeeting:', error);
+        throw new Error('Failed to update the meeting. Please try again later.');
+    }
+
+    // 3. No row changed: the meeting doesn't exist (maybe deleted in another tab)
     if (!updated) {
         throw new Error('Meeting not found.');
     }
 
-    // 3. Refresh every page under /meetings, then go back to the list
+    // 4. Outside try: refresh every page under /meetings, then go back to the list
     revalidatePath('/meetings', 'layout');
     redirect('/meetings');
 }
 
 export async function deleteMeeting(id: number) {
-    // Remove ONLY this meeting (db.deleteMeeting checks the id)
-    await db.deleteMeeting(id);
+    // 1. Remove ONLY this meeting (only the database call goes inside try)
+    try {
+        await db.deleteMeeting(id);
+    } catch (error) {
+        console.error('Database error in deleteMeeting:', error);
+        throw new Error('Failed to delete the meeting. Please try again later.');
+    }
 
-    // Refresh the list; no redirect, because the user is already on /meetings
+    // 2. Refresh the list; no redirect, because the user is already on /meetings
     revalidatePath('/meetings', 'layout');
 }
