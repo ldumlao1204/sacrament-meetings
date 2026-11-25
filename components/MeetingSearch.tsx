@@ -26,7 +26,7 @@ export default function MeetingSearch() {
             defaultValue={searchParams.get('query') ?? ''}
             onChange={(e) => handleSearch(e.target.value)}
             aria-label="Search meetings"
-            className="w-full rounded-md border border-gray-300 px-4 py-2 text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-primary"
+            className="w-full rounded-md border border-gray-500 px-4 py-2 text-gray-900 placeholder:text-gray-600 focus:outline-none focus:ring-2 focus:ring-primary"
         />
     );
 }
