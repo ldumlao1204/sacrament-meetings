@@ -25,7 +25,7 @@ export default function Pagination({ currentPage, totalPages }: PaginationProps)
     const linkStyle =
         'rounded-md border-2 border-primary px-4 py-2 font-semibold text-primary hover:bg-primary hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2';
     const disabledStyle =
-        'rounded-md border-2 border-gray-500 px-4 py-2 font-semibold text-gray-500 cursor-not-allowed';
+        'rounded-md border-2 border-gray-300 px-4 py-2 font-semibold text-gray-600 cursor-not-allowed';
 
     return (
         <nav aria-label="Pagination" className="flex items-center justify-between gap-4 pt-2">
